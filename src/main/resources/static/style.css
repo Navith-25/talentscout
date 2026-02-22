@@ -249,3 +249,37 @@ input:checked + .slider:before { transform: translateX(24px); }
     text-align: center;
     padding: 40px 0;
 }
+/* Queue List Styles */
+.queue-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.queue-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 15px;
+    background: #F9FAFB;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin-bottom: 10px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.queue-item:hover {
+    background: var(--surface);
+    box-shadow: var(--shadow-sm);
+    border-color: var(--primary);
+}
+
+.queue-score {
+    color: var(--primary);
+    font-weight: 700;
+    background: #EEF2FF;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.9em;
+}

@@ -9,6 +9,8 @@ import com.talentscout.service.ScoringEngineService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import java.util.ArrayList;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/candidates")
@@ -93,6 +95,25 @@ public class CandidateController {
         candidateRepository.deleteById(removed.getId());
 
         return ResponseEntity.ok("Removed: " + removed.getName());
+    }
+
+    @GetMapping("/queue")
+    public ResponseEntity<List<BlindCandidateDTO>> getQueueDetails(@RequestParam(required = false, defaultValue = "false") boolean isBlind) {
+        List<Candidate> sortedQueue = maxHeap.getSortedQueue();
+        List<BlindCandidateDTO> response = new ArrayList<>();
+
+        for (int i = 0; i < sortedQueue.size(); i++) {
+            Candidate c = sortedQueue.get(i);
+            BlindCandidateDTO dto = new BlindCandidateDTO();
+            dto.setSuitabilityScore(c.getSuitabilityScore());
+            if (isBlind) {
+                dto.setCandidateAlias("Anonymous Candidate #" + (i + 1));
+            } else {
+                dto.setCandidateAlias(c.getName());
+            }
+            response.add(dto);
+        }
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/trigger-starvation")

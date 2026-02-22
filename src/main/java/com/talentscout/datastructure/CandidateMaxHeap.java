@@ -102,4 +102,9 @@ public class CandidateMaxHeap {
             heapifyDown(i);
         }
     }
+    public List<Candidate> getSortedQueue() {
+        List<Candidate> copy = new ArrayList<>(heap);
+        copy.sort((c1, c2) -> Double.compare(c2.getSuitabilityScore(), c1.getSuitabilityScore()));
+        return copy;
+    }
 }

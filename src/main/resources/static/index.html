@@ -42,6 +42,7 @@
 
     <div class="display-section">
         <h3>Top Candidate Match</h3>
+
         <div class="candidate-card" id="candidateCard">
             <div id="candidateDetails">
                 <p class="empty-msg">Waiting for candidates. Queue is empty.</p>
@@ -49,6 +50,13 @@
             <button onclick="removeAndFetchNext()" id="nextBtn" class="btn btn-success" style="margin-top: 20px; display: none;">
                 ✓ Accept & Get Next Candidate
             </button>
+        </div>
+
+        <div class="queue-section" style="margin-top: 40px; border-top: 2px solid var(--border); padding-top: 20px;">
+            <h3>Waiting Queue (<span id="queueCount">0</span>)</h3>
+            <ul id="queueList" class="queue-list">
+                <li class="empty-msg">No candidates in queue</li>
+            </ul>
         </div>
     </div>
 </div>

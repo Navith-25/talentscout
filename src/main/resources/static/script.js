@@ -91,6 +91,7 @@ async function fetchBestCandidate() {
         if (response.status === 204) {
             candidateDetailsDiv.innerHTML = '<p class="empty-msg">Queue is empty. Waiting for CV uploads...</p>';
             nextBtn.style.display = 'none';
+            fetchQueue();
             return;
         }
 
@@ -112,6 +113,8 @@ async function fetchBestCandidate() {
     } catch (error) {
         console.error("Error fetching candidate:", error);
     }
+
+    fetchQueue();
 }
 
 async function removeAndFetchNext() {
@@ -132,5 +135,37 @@ async function triggerStarvation() {
         }
     } catch (error) {
         console.error("Error triggering starvation:", error);
+    }
+}
+
+async function fetchQueue() {
+    const isBlindMode = document.getElementById('blindModeToggle').checked;
+    try {
+        const response = await fetch('/api/candidates/queue?isBlind=' + isBlindMode);
+        const queue = await response.json();
+
+        document.getElementById('queueCount').innerText = queue.length;
+        const queueList = document.getElementById('queueList');
+        queueList.innerHTML = '';
+
+        if (queue.length === 0) {
+            queueList.innerHTML = '<li class="empty-msg">No candidates in queue</li>';
+            return;
+        }
+
+        queue.forEach((candidate, index) => {
+            const li = document.createElement('li');
+            li.className = 'queue-item';
+
+            if(index === 0) {
+                li.style.borderLeft = "4px solid var(--secondary)";
+                li.innerHTML = `<span>🥇 ${candidate.candidateAlias}</span> <span class="queue-score">${candidate.suitabilityScore}</span>`;
+            } else {
+                li.innerHTML = `<span>${index + 1}. ${candidate.candidateAlias}</span> <span class="queue-score">${candidate.suitabilityScore}</span>`;
+            }
+            queueList.appendChild(li);
+        });
+    } catch (error) {
+        console.error("Error fetching queue:", error);
     }
 }
