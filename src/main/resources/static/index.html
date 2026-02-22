@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TalentScout AI Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="navbar">
+    <h2>✨ TalentScout AI</h2>
+    <div class="toggle-container">
+        <span class="toggle-label">Bias-Blind Mode</span>
+        <label class="switch">
+            <input type="checkbox" id="blindModeToggle" onchange="fetchBestCandidate()">
+            <span class="slider round"></span>
+        </label>
+    </div>
+</div>
+
+<div class="container">
+    <div class="form-section">
+        <h3>Upload Candidate CV</h3>
+        <p class="upload-desc">Upload a PDF resume. Our AI Engine will automatically parse skills, experience, and calculate the suitability score.</p>
+
+        <div class="upload-area" id="uploadArea">
+            <div class="upload-icon">📄</div>
+            <h4>Drag & Drop CV here</h4>
+            <p>or</p>
+            <input type="file" id="cvFile" accept=".pdf" style="display: none;">
+            <button type="button" class="btn btn-outline" onclick="document.getElementById('cvFile').click()">Browse Files</button>
+            <p class="file-name" id="selectedFileName">No file selected</p>
+        </div>
+
+        <button type="button" id="uploadBtn" class="btn btn-primary" onclick="uploadCV()" disabled>Process AI Scoring & Add</button>
+
+        <div class="admin-actions" style="margin-top: 40px;">
+            <button onclick="triggerStarvation()" class="btn btn-warning">⚡ Trigger Anti-Starvation (Decay Algo)</button>
+        </div>
+    </div>
+
+    <div class="display-section">
+        <h3>Top Candidate Match</h3>
+        <div class="candidate-card" id="candidateCard">
+            <div id="candidateDetails">
+                <p class="empty-msg">Waiting for candidates. Queue is empty.</p>
+            </div>
+            <button onclick="removeAndFetchNext()" id="nextBtn" class="btn btn-success" style="margin-top: 20px; display: none;">
+                ✓ Accept & Get Next Candidate
+            </button>
+        </div>
+    </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>

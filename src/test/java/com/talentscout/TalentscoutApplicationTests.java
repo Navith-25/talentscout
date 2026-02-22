@@ -1,0 +1,13 @@
+package com.talentscout;
+
+import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.context.SpringBootTest;
+
+@SpringBootTest
+class TalentscoutApplicationTests {
+
+    @Test
+    void contextLoads() {
+    }
+
+}
