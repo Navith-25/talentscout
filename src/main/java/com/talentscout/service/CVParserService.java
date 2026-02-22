@@ -20,7 +20,8 @@ public class CVParserService {
             "Java", "Spring Boot", "React", "MySQL", "AWS", "Python", "JavaScript",
             "TypeScript", "SQL", "HTML", "CSS", "Node.js", "MongoDB", "Docker",
             "Kubernetes", "Git", "C++", "C#", "PHP", "Machine Learning", "IoT", "ESP32",
-            "Angular", "Vue.js", "Django", "Flask", "REST API", "GraphQL"
+            "Angular", "Vue.js", "Django", "Flask", "REST API", "GraphQL", "PostgreSQL",
+            "Firebase", "Redis", "Jenkins", "CI/CD", "Azure", "GCP", "Microservices"
     );
 
     public Candidate parseCV(MultipartFile file) throws Exception {
@@ -59,8 +60,35 @@ public class CVParserService {
 
     private String extractRealName(String text, String fallbackName) {
         String[] lines = text.split("\\r?\\n");
-        for (String line : lines) {
-            String cleanLine = line.trim();
+
+        Pattern nameKeywordPattern = Pattern.compile("(?i)(Full Name|Name|Candidate Name|Applicant Name)\\s*[:\\-]?\\s*([a-zA-Z\\s]{3,40})");
+        for (int i = 0; i < Math.min(lines.length, 20); i++) {
+            Matcher m = nameKeywordPattern.matcher(lines[i]);
+            if (m.find()) {
+                String extracted = m.group(2).trim();
+                if (extracted.length() > 2) return extracted;
+            }
+        }
+
+        int emailLineIndex = -1;
+        for (int i = 0; i < Math.min(lines.length, 15); i++) {
+            if (lines[i].contains("@")) {
+                emailLineIndex = i;
+                break;
+            }
+        }
+
+        if (emailLineIndex > 0) {
+            String candidateName = lines[emailLineIndex - 1].trim();
+            if (candidateName.length() > 3 && candidateName.length() < 45
+                    && !candidateName.toLowerCase().contains("curriculum")
+                    && !candidateName.toLowerCase().contains("resume")) {
+                return candidateName;
+            }
+        }
+
+        for (int i = 0; i < Math.min(lines.length, 5); i++) {
+            String cleanLine = lines[i].trim();
             if (cleanLine.length() > 3 && cleanLine.length() < 40
                     && !cleanLine.toLowerCase().contains("cv")
                     && !cleanLine.toLowerCase().contains("resume")
@@ -68,6 +96,7 @@ public class CVParserService {
                 return cleanLine;
             }
         }
+
         return fallbackName.replace(".pdf", "").replace("_", " ");
     }
 
