@@ -100,14 +100,22 @@ async function fetchBestCandidate() {
         const displayName = candidate.name ? candidate.name : candidate.candidateAlias;
         const skillsList = (candidate.skills && candidate.skills.length > 0) ? candidate.skills.join(', ') : "None Detected";
 
+        // Dynamic '--score' property eka inline style ekak widiyata pass karala thiyenawa
         candidateDetailsDiv.innerHTML = `
-            <h2>${displayName}</h2>
-            <p><strong>Suitability Score:</strong> <span class="score-badge">${candidate.suitabilityScore}</span></p>
-            <p><strong>Email:</strong> ${candidate.email || "Not Detected"}</p>
-            <p><strong>Phone:</strong> ${candidate.phone || "Not Detected"}</p>
-            <p><strong>Experience:</strong> ${candidate.experienceYears} Years</p>
-            <p><strong>Education:</strong> ${candidate.educationLevel || "Not Detected"}</p>
-            <p><strong>Skills Found:</strong> ${skillsList}</p>
+            <div class="score-circle" style="--score: ${candidate.suitabilityScore}" data-score="${candidate.suitabilityScore}"></div>
+            <h2 style="text-align: center; margin-bottom: 1.5rem;">${displayName}</h2>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; border-top: 1px solid var(--border); padding-top: 1rem;">
+                <p><strong>📧 Email:</strong><br>${candidate.email || "N/A"}</p>
+                <p><strong>📞 Phone:</strong><br>${candidate.phone || "N/A"}</p>
+                <p><strong>💼 Exp:</strong><br>${candidate.experienceYears} Years</p>
+                <p><strong>🎓 Edu:</strong><br>${candidate.educationLevel || "N/A"}</p>
+            </div>
+
+            <p style="margin-top: 1rem; padding: 10px; background: rgba(99, 102, 241, 0.05); border-radius: 12px;">
+                <strong>🛠 Skills Found:</strong><br>
+                <span style="color: var(--primary); font-weight: 500;">${skillsList}</span>
+            </p>
         `;
         nextBtn.style.display = 'block';
     } catch (error) {
