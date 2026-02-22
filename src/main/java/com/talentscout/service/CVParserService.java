@@ -8,6 +8,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -15,7 +16,12 @@ import java.util.regex.Pattern;
 @Service
 public class CVParserService {
 
-    private final List<String> KNOWN_SKILLS = List.of("Java", "Spring Boot", "React", "MySQL", "AWS", "Python", "JavaScript", "SQL", "HTML", "CSS");
+    private final List<String> KNOWN_SKILLS = Arrays.asList(
+            "Java", "Spring Boot", "React", "MySQL", "AWS", "Python", "JavaScript",
+            "TypeScript", "SQL", "HTML", "CSS", "Node.js", "MongoDB", "Docker",
+            "Kubernetes", "Git", "C++", "C#", "PHP", "Machine Learning", "IoT", "ESP32",
+            "Angular", "Vue.js", "Django", "Flask", "REST API", "GraphQL"
+    );
 
     public Candidate parseCV(MultipartFile file) throws Exception {
         try (InputStream inputStream = file.getInputStream();
@@ -25,27 +31,70 @@ public class CVParserService {
             String cvText = pdfStripper.getText(document);
 
             Candidate candidate = new Candidate();
-
             candidate.setId("C" + (int)(Math.random() * 10000));
 
-            String cleanName = file.getOriginalFilename().replace(".pdf", "").replace("_", " ");
-            candidate.setName(cleanName);
+            candidate.setName(extractRealName(cvText, file.getOriginalFilename()));
+
+            candidate.setEmail(extractEmail(cvText));
+            candidate.setPhone(extractPhone(cvText));
 
             candidate.setSkills(extractSkills(cvText));
-
             candidate.setExperienceYears(extractExperience(cvText));
-
             candidate.setEducationLevel(extractEducation(cvText));
+            candidate.setProjectCount(extractProjects(cvText));
 
             return candidate;
         }
     }
 
+    private String extractEmail(String text) {
+        Matcher m = Pattern.compile("[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,6}").matcher(text);
+        return m.find() ? m.group() : "Not Detected";
+    }
+
+    private String extractPhone(String text) {
+        Matcher m = Pattern.compile("(\\+\\d{1,3}[- ]?)?\\d{9,10}").matcher(text);
+        return m.find() ? m.group() : "Not Detected";
+    }
+
+    private String extractRealName(String text, String fallbackName) {
+        String[] lines = text.split("\\r?\\n");
+        for (String line : lines) {
+            String cleanLine = line.trim();
+            if (cleanLine.length() > 3 && cleanLine.length() < 40
+                    && !cleanLine.toLowerCase().contains("cv")
+                    && !cleanLine.toLowerCase().contains("resume")
+                    && !cleanLine.toLowerCase().contains("curriculum vitae")) {
+                return cleanLine;
+            }
+        }
+        return fallbackName.replace(".pdf", "").replace("_", " ");
+    }
+
+    private int extractProjects(String text) {
+        int count = 0;
+        String lowerText = text.toLowerCase();
+        if (lowerText.contains("github.com") || lowerText.contains("gitlab.com") || lowerText.contains("bitbucket.org")) {
+            count += 2;
+        }
+
+        Pattern pattern = Pattern.compile("\\b(project|developed|built|created|designed|portfolio|implemented)\\b", Pattern.CASE_INSENSITIVE);
+        Matcher matcher = pattern.matcher(text);
+        int keywordHits = 0;
+        while (matcher.find()) {
+            keywordHits++;
+        }
+
+        count += (keywordHits / 2);
+        return Math.min(count, 8);
+    }
+
     private List<String> extractSkills(String text) {
         List<String> foundSkills = new ArrayList<>();
-        String upperText = text.toUpperCase();
         for (String skill : KNOWN_SKILLS) {
-            if (upperText.contains(skill.toUpperCase())) {
+            Pattern pattern = Pattern.compile("\\b" + Pattern.quote(skill) + "\\b", Pattern.CASE_INSENSITIVE);
+            Matcher matcher = pattern.matcher(text);
+            if (matcher.find()) {
                 foundSkills.add(skill);
             }
         }
@@ -53,19 +102,21 @@ public class CVParserService {
     }
 
     private Double extractExperience(String text) {
-        Pattern pattern = Pattern.compile("(\\d+)(\\.\\d+)?\\s+(years|yrs)", Pattern.CASE_INSENSITIVE);
-        Matcher matcher = pattern.matcher(text);
-        if (matcher.find()) {
-            return Double.parseDouble(matcher.group(1));
+        double maxExp = 0.0;
+        Pattern pattern1 = Pattern.compile("(\\d+)(\\.\\d+)?\\+?\\s*(years|yrs)", Pattern.CASE_INSENSITIVE);
+        Matcher matcher1 = pattern1.matcher(text);
+        while (matcher1.find()) {
+            double exp = Double.parseDouble(matcher1.group(1) + (matcher1.group(2) != null ? matcher1.group(2) : ""));
+            if (exp > maxExp && exp < 40) maxExp = exp;
         }
-        return 0.5;
+        return maxExp > 0 ? (Math.round(maxExp * 10.0) / 10.0) : 0.5;
     }
 
     private String extractEducation(String text) {
-        String upperText = text.toUpperCase();
-        if (upperText.contains("BSC") || upperText.contains("BACHELOR")) return "BSc";
-        if (upperText.contains("MSC") || upperText.contains("MASTER")) return "MSc";
-        if (upperText.contains("HND") || upperText.contains("HIGHER NATIONAL DIPLOMA")) return "HND";
+        if (Pattern.compile("\\b(PHD|DOCTORATE|DPHIL)\\b", Pattern.CASE_INSENSITIVE).matcher(text).find()) return "PhD";
+        if (Pattern.compile("\\b(MSC|MASTER|MASTERS|M\\.TECH|MBA)\\b", Pattern.CASE_INSENSITIVE).matcher(text).find()) return "MSc";
+        if (Pattern.compile("\\b(BSC|BACHELOR|BACHELORS|BENG|B\\.SC|B\\.TECH|BBA)\\b", Pattern.CASE_INSENSITIVE).matcher(text).find()) return "BSc";
+        if (Pattern.compile("\\b(HND|HIGHER NATIONAL DIPLOMA|DIPLOMA|ADVANCED DIPLOMA)\\b", Pattern.CASE_INSENSITIVE).matcher(text).find()) return "HND";
         return "Other";
     }
 }

@@ -16,14 +16,17 @@ public class Candidate {
 
     @Id
     private String id;
-
     private String name;
+
+    private String email;
+    private String phone;
 
     @ElementCollection
     private List<String> skills;
 
     private Double experienceYears;
     private String educationLevel;
+    private int projectCount;
     private Double suitabilityScore;
 
     private LocalDate applicationDate = LocalDate.now();

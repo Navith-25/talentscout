@@ -1,4 +1,3 @@
-
 document.addEventListener("DOMContentLoaded", () => {
     fetchBestCandidate();
 });
@@ -103,6 +102,8 @@ async function fetchBestCandidate() {
         candidateDetailsDiv.innerHTML = `
             <h2>${displayName}</h2>
             <p><strong>Suitability Score:</strong> <span class="score-badge">${candidate.suitabilityScore}</span></p>
+            <p><strong>Email:</strong> ${candidate.email || "Not Detected"}</p>
+            <p><strong>Phone:</strong> ${candidate.phone || "Not Detected"}</p>
             <p><strong>Experience:</strong> ${candidate.experienceYears} Years</p>
             <p><strong>Education:</strong> ${candidate.educationLevel || "Not Detected"}</p>
             <p><strong>Skills Found:</strong> ${skillsList}</p>
@@ -112,6 +113,7 @@ async function fetchBestCandidate() {
         console.error("Error fetching candidate:", error);
     }
 }
+
 async function removeAndFetchNext() {
     try {
         await fetch('/api/candidates/next');
