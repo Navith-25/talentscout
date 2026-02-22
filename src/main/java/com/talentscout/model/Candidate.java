@@ -21,7 +21,7 @@ public class Candidate {
     private String email;
     private String phone;
 
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     private List<String> skills;
 
     private Double experienceYears;

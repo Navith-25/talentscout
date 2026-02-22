@@ -1,6 +1,8 @@
 package com.talentscout.datastructure;
 
 import com.talentscout.model.Candidate;
+import com.talentscout.repository.CandidateRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -10,9 +12,12 @@ import java.util.List;
 public class CandidateMaxHeap {
 
     private final List<Candidate> heap;
+    private final CandidateRepository candidateRepository;
 
-    public CandidateMaxHeap() {
+    @Autowired
+    public CandidateMaxHeap(CandidateRepository candidateRepository) {
         this.heap = new ArrayList<>();
+        this.candidateRepository = candidateRepository;
     }
 
     private int parent(int i) { return (i - 1) / 2; }
@@ -71,6 +76,8 @@ public class CandidateMaxHeap {
     public void applyAntiStarvationBoost() {
         boolean isUpdated = false;
         LocalDate today = LocalDate.now();
+        List<Candidate> updatedCandidates = new ArrayList<>();
+
         for (Candidate c : heap) {
             if (c.getApplicationDate() != null) {
                 long daysWaiting = java.time.temporal.ChronoUnit.DAYS.between(c.getApplicationDate(), today);
@@ -79,11 +86,14 @@ public class CandidateMaxHeap {
                     c.setSuitabilityScore(c.getSuitabilityScore() + 5.0);
                     c.setApplicationDate(today);
                     isUpdated = true;
+                    updatedCandidates.add(c);
                 }
             }
         }
+
         if (isUpdated) {
             buildHeap();
+            candidateRepository.saveAll(updatedCandidates);
         }
     }
 

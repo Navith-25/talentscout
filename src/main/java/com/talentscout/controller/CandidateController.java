@@ -89,6 +89,9 @@ public class CandidateController {
         if (removed == null) {
             return ResponseEntity.noContent().build();
         }
+
+        candidateRepository.deleteById(removed.getId());
+
         return ResponseEntity.ok("Removed: " + removed.getName());
     }
 
