@@ -21,7 +21,15 @@ public class CVParserService {
             "TypeScript", "SQL", "HTML", "CSS", "Node.js", "MongoDB", "Docker",
             "Kubernetes", "Git", "C++", "C#", "PHP", "Machine Learning", "IoT", "ESP32",
             "Angular", "Vue.js", "Django", "Flask", "REST API", "GraphQL", "PostgreSQL",
-            "Firebase", "Redis", "Jenkins", "CI/CD", "Azure", "GCP", "Microservices"
+            "Firebase", "Redis", "Jenkins", "CI/CD", "Azure", "GCP", "Microservices",
+            "Tailwind", "Bootstrap", "Redux", "Express", "JUnit", "Selenium", "Agile"
+    );
+
+    private final List<String> JUNK_HEADERS = Arrays.asList(
+            "curriculum", "resume", "cv", "contact", "profile", "objective",
+            "experience", "summary", "education", "skills", "address", "phone", "email",
+            "developer", "engineer", "professional", "personal", "details", "information",
+            "page", "mobile", "linkedin", "github"
     );
 
     public Candidate parseCV(MultipartFile file) throws Exception {
@@ -62,7 +70,7 @@ public class CVParserService {
         String[] lines = text.split("\\r?\\n");
 
         Pattern nameKeywordPattern = Pattern.compile("(?i)(Full Name|Name|Candidate Name|Applicant Name)\\s*[:\\-]?\\s*([a-zA-Z\\s]{3,40})");
-        for (int i = 0; i < Math.min(lines.length, 20); i++) {
+        for (int i = 0; i < Math.min(lines.length, 25); i++) {
             Matcher m = nameKeywordPattern.matcher(lines[i]);
             if (m.find()) {
                 String extracted = m.group(2).trim();
@@ -70,34 +78,44 @@ public class CVParserService {
             }
         }
 
-        int emailLineIndex = -1;
+        int emailLine = -1;
         for (int i = 0; i < Math.min(lines.length, 15); i++) {
             if (lines[i].contains("@")) {
-                emailLineIndex = i;
+                emailLine = i;
                 break;
             }
         }
-
-        if (emailLineIndex > 0) {
-            String candidateName = lines[emailLineIndex - 1].trim();
-            if (candidateName.length() > 3 && candidateName.length() < 45
-                    && !candidateName.toLowerCase().contains("curriculum")
-                    && !candidateName.toLowerCase().contains("resume")) {
-                return candidateName;
+        if (emailLine > 0) {
+            for (int j = emailLine - 1; j >= Math.max(0, emailLine - 3); j--) {
+                String line = lines[j].trim();
+                if (isValidName(line)) return line;
             }
         }
 
-        for (int i = 0; i < Math.min(lines.length, 5); i++) {
-            String cleanLine = lines[i].trim();
-            if (cleanLine.length() > 3 && cleanLine.length() < 40
-                    && !cleanLine.toLowerCase().contains("cv")
-                    && !cleanLine.toLowerCase().contains("resume")
-                    && !cleanLine.toLowerCase().contains("curriculum vitae")) {
-                return cleanLine;
-            }
+        for (int i = 0; i < Math.min(lines.length, 10); i++) {
+            String line = lines[i].trim();
+            if (isValidName(line)) return line;
         }
 
         return fallbackName.replace(".pdf", "").replace("_", " ");
+    }
+
+    private boolean isValidName(String line) {
+        if (line.length() < 3 || line.length() > 40) return false;
+        String lowerLine = line.toLowerCase();
+
+        for (String junk : JUNK_HEADERS) {
+            if (lowerLine.contains(junk)) return false;
+        }
+
+        if (!line.matches("^[a-zA-Z\\s\\.]+$")) return false;
+
+        String[] words = line.split("\\s+");
+        for (String word : words) {
+            if (word.length() > 0 && !Character.isUpperCase(word.charAt(0))) return false;
+        }
+
+        return true;
     }
 
     private int extractProjects(String text) {
@@ -106,14 +124,12 @@ public class CVParserService {
         if (lowerText.contains("github.com") || lowerText.contains("gitlab.com") || lowerText.contains("bitbucket.org")) {
             count += 2;
         }
-
         Pattern pattern = Pattern.compile("\\b(project|developed|built|created|designed|portfolio|implemented)\\b", Pattern.CASE_INSENSITIVE);
         Matcher matcher = pattern.matcher(text);
         int keywordHits = 0;
         while (matcher.find()) {
             keywordHits++;
         }
-
         count += (keywordHits / 2);
         return Math.min(count, 8);
     }
@@ -131,6 +147,12 @@ public class CVParserService {
     }
 
     private Double extractExperience(String text) {
+        Pattern totalExpPattern = Pattern.compile("(?i)total\\s+experience\\s*[:\\-]?\\s*(\\d+)(\\.\\d+)?", Pattern.CASE_INSENSITIVE);
+        Matcher mTotal = totalExpPattern.matcher(text);
+        if (mTotal.find()) {
+            return Double.parseDouble(mTotal.group(1) + (mTotal.group(2) != null ? mTotal.group(2) : ""));
+        }
+
         double maxExp = 0.0;
         Pattern pattern1 = Pattern.compile("(\\d+)(\\.\\d+)?\\+?\\s*(years|yrs)", Pattern.CASE_INSENSITIVE);
         Matcher matcher1 = pattern1.matcher(text);
