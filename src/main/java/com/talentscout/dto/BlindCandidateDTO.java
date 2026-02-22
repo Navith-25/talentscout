@@ -13,4 +13,5 @@ public class BlindCandidateDTO {
     private List<String> skills;
     private Double suitabilityScore;
     private Double experienceYears;
+
 }
