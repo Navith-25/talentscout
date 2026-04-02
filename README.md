@@ -4,6 +4,7 @@ TalentScout AI is a modern, data-driven recruitment backend built to streamline 
 
 ## ✨ Key Features
 
+* **🔐 Enterprise-Grade Security (WSO2 Asgardeo):** Integrated Customer Identity and Access Management (CIAM) using WSO2 Asgardeo. Secures REST API endpoints via Spring Security and OAuth2/OIDC, ensuring only authorized HR personnel can access and manage candidate data.
 * **🧠 Intelligent Scoring Engine:** Automatically parses candidate profiles and calculates a weighted score based on skills, experience, and educational background.
 * **⚡ Priority-Based Ranking (Max-Heap):** Utilizes a custom `CandidateMaxHeap` data structure to ensure that the highest-scoring candidates are always surfaced first, guaranteeing $O(1)$ time complexity for retrieving the top candidate.
 * **⚖️ Anti-Starvation Scheduler:** Implements a specialized background service (`AntiStarvationScheduler`) to periodically boost the priority of older, unreviewed applications, ensuring fair processing and preventing lower-scored candidates from remaining in the queue indefinitely.
@@ -15,6 +16,7 @@ TalentScout AI is a modern, data-driven recruitment backend built to streamline 
 **Backend**
 * **Framework:** Java / Spring Boot 3.x
 * **Core Algorithms:** Custom Max-Heap implementation, Priority Scheduling
+* **Identity Provider:** WSO2 Asgardeo (OAuth2 / OpenID Connect)
 * **Build Tool:** Maven
 
 **Frontend**
